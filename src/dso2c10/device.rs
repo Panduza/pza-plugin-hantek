@@ -49,7 +49,14 @@ impl DriverOperations for Device {
         panduza_platform_core::std::attribute::idn::mount(instance.clone(), interface.clone())
             .await?;
 
-        // panduza_platform_core::std::class::repl::mount("scpi", instance.clone(), driver).await?;
+        println!(
+            "--------- {:?}",
+            interface.lock().await.get_channel_display(2).await?
+        );
+        println!(
+            "--------- {:?}",
+            interface.lock().await.get_channel_display(1).await?
+        );
 
         Ok(())
     }

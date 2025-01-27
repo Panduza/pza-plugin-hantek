@@ -38,6 +38,54 @@ impl DSO2C10Interface {
             logger,
         }
     }
+
+    pub async fn get_channel_display(&self, channel_id: usize) -> Result<bool, Error> {
+        //
+        // Measure perfs
+        let start = Instant::now();
+
+        //
+        // Perform request
+        let mut response: Vec<u8> = Vec::new();
+        let cmd_string = format!("CHANnel{}:DISPlay?", channel_id);
+        let cmd = cmd_string.as_bytes();
+        self.sub_interface
+            .lock()
+            .await
+            .execute_command(cmd, &mut response)
+            .await?;
+
+        //
+        // Log
+        log_trace!(
+            self.logger,
+            "ASK <=> {:?} - {:?} - {:.2?}",
+            cmd_string,
+            response,
+            start.elapsed()
+        );
+
+        //
+        // End
+        if response[0] == b'0' {
+            Ok(false)
+        } else if response[0] == b'1' {
+            Ok(true)
+        } else {
+            Err(Error::InternalLogic(
+                "Cannot parse the response".to_string(),
+            ))
+        }
+    }
+
+    // CHANnel<n>:BWLimit
+    // CHANnel<n>:COUPling
+    // CHANnel<n>:DISPlay
+    // CHANnel<n>:INVert
+    // CHANnel<n>:OFFSet
+    // CHANnel<n>:SCALe
+    // CHANnel<n>:PROBe
+    // CHANnel<n>:VERNier
 }
 
 #[async_trait]
