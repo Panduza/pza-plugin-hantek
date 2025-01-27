@@ -4,16 +4,14 @@ use panduza_platform_core::{Producer, Scanner};
 panduza_platform_core::plugin_interface!("hantek");
 
 pub mod common;
-mod ka3005p;
-mod kd3005p;
-mod kd3005p_fake;
+mod dso2c10;
 mod scanner;
 
 // Export the producers of the plugin
 //
 pub fn plugin_producers() -> Vec<Box<dyn Producer>> {
     let mut producers: Vec<Box<dyn Producer>> = vec![];
-    producers.push(ka3005p::producer::KA3005P::new());
+    producers.push(dso2c10::Package::default().boxed());
     // producers.push(kd3005p::producer::KD3005P::new());
     // producers.push(kd3005p_fake::producer::Kd3005pFake::new());
     return producers;
