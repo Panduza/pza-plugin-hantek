@@ -3,9 +3,7 @@ use panduza_platform_core::{Producer, Scanner};
 #[cfg(feature = "plugin")]
 panduza_platform_core::plugin_interface!("hantek");
 
-pub mod common;
 mod dso2c10;
-mod scanner;
 
 // Export the producers of the plugin
 //
