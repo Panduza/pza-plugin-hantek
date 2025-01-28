@@ -39,7 +39,9 @@ impl DSO2C10Interface {
         }
     }
 
-    pub async fn get_channel_display(&self, channel_id: usize) -> Result<bool, Error> {
+    /// Generic way to get boolean parameter from the device
+    ///
+    pub async fn get_boolean_parameter(&self, cmd: &[u8]) -> Result<bool, Error> {
         //
         // Measure perfs
         let start = Instant::now();
@@ -47,8 +49,6 @@ impl DSO2C10Interface {
         //
         // Perform request
         let mut response: Vec<u8> = Vec::new();
-        let cmd_string = format!("CHANnel{}:DISPlay?", channel_id);
-        let cmd = cmd_string.as_bytes();
         self.sub_interface
             .lock()
             .await
@@ -60,7 +60,7 @@ impl DSO2C10Interface {
         log_trace!(
             self.logger,
             "ASK <=> {:?} - {:?} - {:.2?}",
-            cmd_string,
+            cmd,
             response,
             start.elapsed()
         );
@@ -76,6 +76,13 @@ impl DSO2C10Interface {
                 "Cannot parse the response".to_string(),
             ))
         }
+    }
+
+    ///
+    ///
+    pub async fn get_channel_display(&self, channel_id: usize) -> Result<bool, Error> {
+        let cmd_string = format!("CHANnel{}:DISPlay?", channel_id);
+        self.get_boolean_parameter(cmd_string.as_bytes()).await
     }
 
     // CHANnel<n>:BWLimit
