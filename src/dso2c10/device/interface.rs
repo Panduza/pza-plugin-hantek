@@ -78,6 +78,95 @@ impl DSO2C10Interface {
         }
     }
 
+    /// Generic way to get string parameter from the device
+    ///
+    pub async fn get_string_parameter(&self, cmd: &[u8]) -> Result<String, Error> {
+        //
+        // Measure perfs
+        let start = Instant::now();
+
+        //
+        // Perform request
+        let mut response: Vec<u8> = Vec::new();
+        self.sub_interface
+            .lock()
+            .await
+            .execute_command(cmd, &mut response)
+            .await?;
+
+        //
+        // Log
+        log_trace!(
+            self.logger,
+            "ASK <=> {:?} - {:?} - {:.2?}",
+            cmd,
+            response,
+            start.elapsed()
+        );
+
+        //
+        // End
+        match String::from_utf8(response) {
+            Ok(s) => Ok(s),
+            Err(e) => Err(Error::Generic(
+                "Cannot convert response into string".to_string(),
+            )),
+        }
+    }
+
+    /// Generic way to get string parameter from the device
+    ///
+    pub async fn get_float_parameter(&self, cmd: &[u8]) -> Result<f64, Error> {
+        //
+        // Measure perfs
+        let start = Instant::now();
+
+        //
+        // Perform request
+        let mut response: Vec<u8> = Vec::new();
+        self.sub_interface
+            .lock()
+            .await
+            .execute_command(cmd, &mut response)
+            .await?;
+
+        //
+        // Log
+        log_trace!(
+            self.logger,
+            "ASK <=> {:?} - {:?} - {:.2?}",
+            cmd,
+            response,
+            start.elapsed()
+        );
+
+        //
+        // End
+        match String::from_utf8(response) {
+            Ok(s) => {
+                println!("---------------{:?}", s);
+                Ok(1.0)
+            }
+            Err(e) => Err(Error::Generic(
+                "Cannot convert response into string".to_string(),
+            )),
+        }
+    }
+
+    ///
+    ///
+    pub async fn get_channel_bwlimit(&self, channel_id: usize) -> Result<bool, Error> {
+        let cmd_string = format!("CHANnel{}:BWLimit?", channel_id);
+        self.get_boolean_parameter(cmd_string.as_bytes()).await
+    }
+
+    ///
+    ///
+    pub async fn get_channel_coupling(&self, channel_id: usize) -> Result<String, Error> {
+        let cmd_string = format!("CHANnel{}:COUPling?", channel_id);
+        self.get_string_parameter(cmd_string.as_bytes()).await
+    }
+
     ///
     ///
     pub async fn get_channel_display(&self, channel_id: usize) -> Result<bool, Error> {
@@ -85,14 +174,35 @@ impl DSO2C10Interface {
         self.get_boolean_parameter(cmd_string.as_bytes()).await
     }
 
-    // CHANnel<n>:BWLimit
-    // CHANnel<n>:COUPling
-    // CHANnel<n>:DISPlay
-    // CHANnel<n>:INVert
-    // CHANnel<n>:OFFSet
-    // CHANnel<n>:SCALe
+    ///
+    ///
+    pub async fn get_channel_invert(&self, channel_id: usize) -> Result<bool, Error> {
+        let cmd_string = format!("CHANnel{}:INVert?", channel_id);
+        self.get_boolean_parameter(cmd_string.as_bytes()).await
+    }
+
+    ///
+    ///
+    pub async fn get_channel_offset(&self, channel_id: usize) -> Result<f64, Error> {
+        let cmd_string = format!("CHANnel{}:OFFSet?", channel_id);
+        self.get_float_parameter(cmd_string.as_bytes()).await
+    }
+
+    ///
+    ///
+    pub async fn get_channel_scale(&self, channel_id: usize) -> Result<f64, Error> {
+        let cmd_string = format!("CHANnel{}:SCALe?", channel_id);
+        self.get_float_parameter(cmd_string.as_bytes()).await
+    }
+
     // CHANnel<n>:PROBe
-    // CHANnel<n>:VERNier
+
+    ///
+    ///
+    pub async fn get_channel_vernier(&self, channel_id: usize) -> Result<bool, Error> {
+        let cmd_string = format!("CHANnel{}:VERNier?", channel_id);
+        self.get_boolean_parameter(cmd_string.as_bytes()).await
+    }
 }
 
 #[async_trait]
