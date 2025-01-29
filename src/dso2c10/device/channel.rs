@@ -1,9 +1,12 @@
+mod bw_limit;
 mod display;
+mod invert;
+mod offset;
+mod vernier;
 use tokio::sync::Mutex;
 
 use panduza_platform_core::{
-    log_debug, log_debug_mount_end, log_debug_mount_start, spawn_on_command, BooleanAttServer,
-    Container, Error,
+    log_debug, log_debug_mount_end, log_debug_mount_start, BooleanAttServer, Container, Error,
 };
 use std::sync::Arc;
 
@@ -33,7 +36,11 @@ pub async fn mount<C: Container + 'static>(
     let logger = class_chan.logger().clone();
     log_debug_mount_start!(logger);
 
-    display::mount(parent, channel_id, interface).await?;
+    bw_limit::mount(class_chan.clone(), channel_id, interface.clone()).await?;
+    display::mount(class_chan.clone(), channel_id, interface.clone()).await?;
+    invert::mount(class_chan.clone(), channel_id, interface.clone()).await?;
+    vernier::mount(class_chan.clone(), channel_id, interface.clone()).await?;
+    offset::mount(class_chan.clone(), channel_id, interface.clone()).await?;
 
     //
     //

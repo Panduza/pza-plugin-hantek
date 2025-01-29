@@ -18,16 +18,11 @@ pub async fn mount<C: Container + 'static>(
     //
     //
     let att = parent
-        .create_attribute("bw_limit")
+        .create_attribute("invert")
         .with_rw()
         .with_info(
-            "* OFF: Turn off the 20MHz bandwidth limit, and the high-frequency components
-contained in the measured signal can pass.
-* ON: Turn on the bandwidth limitation, and the high-frequency components contained in
-the signal under test are attenuated.
-Turning on bandwidth limiting reduces waveform noise, but attenuates high-frequency
-components.
-",
+            "Turn the waveform inversion of the specified channel on or off or query the switching
+status of the waveform inversion of the specified channel.",
         )
         .finish_as_boolean()
         .await?;
@@ -39,7 +34,7 @@ components.
         interface
             .lock()
             .await
-            .get_channel_bw_limit(channel_id)
+            .get_channel_invert(channel_id)
             .await?,
     )
     .await?;
@@ -68,14 +63,14 @@ async fn on_command(
     while let Some(command) = att.pop_cmd().await {
         //
         // Log
-        log_debug!(att.logger(), "bw_limit command received '{:?}'", command);
+        log_debug!(att.logger(), "invert command received '{:?}'", command);
 
         //
         //
         interface
             .lock()
             .await
-            .set_channel_bw_limit(channel_id, command)
+            .set_channel_invert(channel_id, command)
             .await?;
 
         //

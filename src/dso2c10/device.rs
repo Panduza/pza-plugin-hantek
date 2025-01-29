@@ -43,10 +43,13 @@ impl DriverOperations for Device {
 
         //
         // Mount the driver
-        let mut driver = UsbTmcDriver::open(&usb_settings)?.into_arc_mutex();
+        let driver = UsbTmcDriver::open(&usb_settings)?.into_arc_mutex();
 
         let interface: Arc<Mutex<DSO2C10Interface>> =
             Arc::new(Mutex::new(DSO2C10Interface::new(driver, logger.clone())));
+
+        panduza_platform_core::std::class::repl::mount("repl", instance.clone(), interface.clone())
+            .await?;
 
         panduza_platform_core::std::attribute::idn::mount(instance.clone(), interface.clone())
             .await?;

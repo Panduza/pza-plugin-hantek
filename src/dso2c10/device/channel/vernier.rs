@@ -18,15 +18,18 @@ pub async fn mount<C: Container + 'static>(
     //
     //
     let att = parent
-        .create_attribute("bw_limit")
+        .create_attribute("vernier")
         .with_rw()
         .with_info(
-            "* OFF: Turn off the 20MHz bandwidth limit, and the high-frequency components
-contained in the measured signal can pass.
-* ON: Turn on the bandwidth limitation, and the high-frequency components contained in
-the signal under test are attenuated.
-Turning on bandwidth limiting reduces waveform noise, but attenuates high-frequency
-components.
+            "Manage the fine adjustment function of the vertical scale.
+
+The trim setting is off by default. At this time, you can only set the vertical scale in 1-
+2-5 steps, that is, 500u, 1mV, 2mV, 5mV, 10mV ... 10V (probe ratio is 1X). When the
+trim setting is on, you can further adjust the vertical scale within a smaller range to
+improve vertical resolution. If the amplitude of the input waveform is slightly larger
+than the full scale in the current scale, and the amplitude displayed by the waveform
+of the next gear is slightly lower, you can use fine adjustment to improve the
+waveform display amplitude to facilitate observation of signal details.
 ",
         )
         .finish_as_boolean()
@@ -39,7 +42,7 @@ components.
         interface
             .lock()
             .await
-            .get_channel_bw_limit(channel_id)
+            .get_channel_vernier(channel_id)
             .await?,
     )
     .await?;
@@ -68,14 +71,14 @@ async fn on_command(
     while let Some(command) = att.pop_cmd().await {
         //
         // Log
-        log_debug!(att.logger(), "bw_limit command received '{:?}'", command);
+        log_debug!(att.logger(), "vernier command received '{:?}'", command);
 
         //
         //
         interface
             .lock()
             .await
-            .set_channel_bw_limit(channel_id, command)
+            .set_channel_vernier(channel_id, command)
             .await?;
 
         //
