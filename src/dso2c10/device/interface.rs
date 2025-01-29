@@ -176,6 +176,19 @@ impl DSO2C10Interface {
 
     ///
     ///
+    pub async fn set_channel_display(&self, channel_id: usize, value: bool) -> Result<(), Error> {
+        let mut v = "0";
+        if value {
+            v = "1";
+        }
+        let cmd_string = format!("CHANnel{}:DISPlay {}", channel_id, v);
+        let cmd = cmd_string.as_bytes();
+        self.sub_interface.lock().await.send_command(cmd).await?;
+        Ok(())
+    }
+
+    ///
+    ///
     pub async fn get_channel_invert(&self, channel_id: usize) -> Result<bool, Error> {
         let cmd_string = format!("CHANnel{}:INVert?", channel_id);
         self.get_boolean_parameter(cmd_string.as_bytes()).await

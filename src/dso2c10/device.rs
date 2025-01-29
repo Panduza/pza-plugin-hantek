@@ -1,3 +1,4 @@
+mod channel;
 mod interface;
 
 use interface::DSO2C10Interface;
@@ -44,19 +45,16 @@ impl DriverOperations for Device {
         // Mount the driver
         let mut driver = UsbTmcDriver::open(&usb_settings)?.into_arc_mutex();
 
-        let interface = Arc::new(Mutex::new(DSO2C10Interface::new(driver, logger.clone())));
+        let interface: Arc<Mutex<DSO2C10Interface>> =
+            Arc::new(Mutex::new(DSO2C10Interface::new(driver, logger.clone())));
 
         panduza_platform_core::std::attribute::idn::mount(instance.clone(), interface.clone())
             .await?;
 
-        println!(
-            "--------- {:?}",
-            interface.lock().await.get_channel_display(2).await?
-        );
-        println!(
-            "--------- {:?}",
-            interface.lock().await.get_channel_display(1).await?
-        );
+        let class_channels = instance.create_class("channel").finish().await;
+        for i in 1..2 {
+            channel::mount(class_channels.clone(), i, interface.clone()).await?;
+        }
 
         Ok(())
     }
