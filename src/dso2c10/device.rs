@@ -55,7 +55,7 @@ impl DriverOperations for Device {
             .await?;
 
         let class_channels = instance.create_class("channel").finish().await;
-        for i in 1..2 {
+        for i in 1..=2 {
             channel::mount(class_channels.clone(), i, interface.clone()).await?;
         }
 
