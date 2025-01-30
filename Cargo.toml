@@ -39,8 +39,3 @@ prost-build = { version = "0.13.1" }
 # Enable this if you want to build this driver as a dynamic plugin
 # 
 plugin = []
-
-# Display perf mesurement on log info
-# Allow perf measurement when the code is built in release
-# 
-measure-perfs = []

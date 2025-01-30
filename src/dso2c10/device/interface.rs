@@ -164,10 +164,9 @@ impl DSO2C10Interface {
         //
         // End
         match String::from_utf8(response) {
-            Ok(s) => {
-                println!("---------------{:?}", s);
-                Ok(1.0)
-            }
+            Ok(s) => Ok(s
+                .parse::<f64>()
+                .map_err(|_| Error::Generic("Cannot convert response into float".to_string()))?),
             Err(e) => Err(Error::Generic(
                 "Cannot convert response into string".to_string(),
             )),
@@ -268,6 +267,19 @@ impl DSO2C10Interface {
         self.get_float_parameter(cmd_string.as_bytes()).await
     }
 
+    ///
+    ///
+    pub async fn set_channel_scale(&self, channel_id: usize, value: f64) -> Result<(), Error> {
+        // let mut v = "0";
+        // if value {
+        //     v = "1";
+        // }
+        let cmd_string = format!("CHANnel{}:SCALe {}", channel_id, value);
+        let cmd = cmd_string.as_bytes();
+        self.sub_interface.lock().await.send_command(cmd).await?;
+        Ok(())
+    }
+
     // CHANnel<n>:PROBe
 
     ///
@@ -328,11 +340,6 @@ impl IdnReader for DSO2C10Interface {
             response,
             start.elapsed()
         );
-
-        //
-        //
-        #[cfg(feature = "measure-perfs")]
-        log_info!(self.logger, "ASK <=> IDN - {:.2?}", start.elapsed());
 
         //
         // End
