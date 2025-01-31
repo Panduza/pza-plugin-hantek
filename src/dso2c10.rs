@@ -1,5 +1,8 @@
 mod device;
 
+mod scpi_boolean;
+pub use scpi_boolean::ScpiBoolean;
+
 use device::Device;
 use panduza_platform_core::ProductionOrder;
 use panduza_platform_core::Scanner;
