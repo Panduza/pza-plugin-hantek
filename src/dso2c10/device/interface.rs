@@ -9,6 +9,8 @@ use tokio::sync::Mutex;
 use std::sync::Arc;
 use std::time::Instant;
 
+use crate::dso2c10::ScpiBoolean;
+
 #[derive(Clone)]
 /// Interface to communicate with the DSO2C10 device
 ///
@@ -68,35 +70,8 @@ impl DSO2C10Interface {
 
         //
         // End
-        if response.len() == 1 {
-            if response[0] == b'0' {
-                Ok(false)
-            } else if response[0] == b'1' {
-                Ok(true)
-            } else {
-                Err(Error::InternalLogic(
-                    "Cannot parse the response".to_string(),
-                ))
-            }
-        } else if response.len() == 3 {
-            let r_string = String::from_utf8(response).map_err(|_| {
-                Error::InternalLogic("Cannot convert the response into string".to_string())
-            })?;
-
-            if r_string == "OFF" {
-                Ok(false)
-            } else if r_string == "ON" {
-                Ok(true)
-            } else {
-                Err(Error::InternalLogic(
-                    "Cannot parse the response".to_string(),
-                ))
-            }
-        } else {
-            Err(Error::InternalLogic(
-                "Cannot parse the response".to_string(),
-            ))
-        }
+        let v = ScpiBoolean::from_vec_ascii(&response).map_err(|e| Error::DeserializeFailure(e))?;
+        Ok(v.into())
     }
 
     /// Generic way to get string parameter from the device
@@ -129,7 +104,7 @@ impl DSO2C10Interface {
         // End
         match String::from_utf8(response) {
             Ok(s) => Ok(s),
-            Err(e) => Err(Error::Generic(
+            Err(e) => Err(Error::DeserializeFailure(
                 "Cannot convert response into string".to_string(),
             )),
         }
