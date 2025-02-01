@@ -42,8 +42,6 @@ pub async fn mount<C: Container + 'static>(
 contained in the measured signal can pass.
 * ON: Turn on the bandwidth limitation, and the high-frequency components contained in
 the signal under test are attenuated.
-Turning on bandwidth limiting reduces waveform noise, but attenuates high-frequency
-components.
 ",
     )
     .await?;
@@ -92,18 +90,12 @@ components.
         "Manage the fine adjustment function of the vertical scale.
 
         The trim setting is off by default. At this time, you can only set the vertical scale in 1-
-        2-5 steps, that is, 500u, 1mV, 2mV, 5mV, 10mV ... 10V (probe ratio is 1X). When the
-        trim setting is on, you can further adjust the vertical scale within a smaller range to
-        improve vertical resolution. If the amplitude of the input waveform is slightly larger
-        than the full scale in the current scale, and the amplitude displayed by the waveform
-        of the next gear is slightly lower, you can use fine adjustment to improve the
-        waveform display amplitude to facilitate observation of signal details.
+        2-5 steps, that is, 500u, 1mV, 2mV, 5mV, 10mV ... 10V (probe ratio is 1X). 
         ",
     )
     .await?;
 
     offset::mount(class_chan.clone(), channel_id, interface.clone()).await?;
-    scale::mount(class_chan.clone(), channel_id, interface.clone()).await?;
 
     std_att_enum::mount(
         class_chan.clone(),
@@ -114,8 +106,44 @@ components.
             _ => StringIndex::Channel1Coupling,
         } as usize,
         "coupling",
-        "",
+        "
+Oscilloscope coupling is the process of connecting an oscilloscope to a signal source to measure the signal's waveform.
+    * AC: The DC component of the signal under test is blocked.
+    * DC: Both the DC and AC components of the signal under test can pass.
+    * GND: Both the DC and AC components of the signal under test are blocked
+        ",
         vec!["DC", "AC", "GND"],
+    )
+    .await?;
+
+    std_att_enum::mount(
+        class_chan.clone(),
+        interface.clone(),
+        match channel_id {
+            1 => StringIndex::Channel1Scale,
+            2 => StringIndex::Channel1Scale,
+            _ => StringIndex::Channel1Scale,
+        } as usize,
+        "scale",
+        "Vertical scale of the channel, vertical units per division",
+        vec![
+            "2mV", "5mV", "10mV", "20mV", "50mV", "100mV", "200mV", "500mV", "1V", "2V", "5V",
+            "10V",
+        ],
+    )
+    .await?;
+
+    std_att_enum::mount(
+        class_chan.clone(),
+        interface.clone(),
+        match channel_id {
+            1 => StringIndex::Channel1Probe,
+            2 => StringIndex::Channel1Probe,
+            _ => StringIndex::Channel1Probe,
+        } as usize,
+        "probe",
+        "",
+        vec!["1", "10", "100", "1000"],
     )
     .await?;
 

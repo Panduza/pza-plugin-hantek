@@ -124,6 +124,17 @@ impl DSO2C10Interface {
         }
     }
 
+    ///
+    ///
+    pub async fn set_string_parameter(&self, cmd: &str, value: &String) -> Result<(), Error> {
+        let cmd_string = format!("{} {}", cmd, value);
+        self.sub_interface
+            .lock()
+            .await
+            .send_command(cmd_string.as_bytes())
+            .await
+    }
+
     /// Generic way to get string parameter from the device
     ///
     pub async fn get_float_parameter(&self, cmd: &[u8]) -> Result<f64, Error> {
@@ -406,14 +417,49 @@ impl StringAccessorModel for DSO2C10Interface {
         // Perform the request
         match idx {
             StringIndex::Channel1Coupling => self.get_string_parameter(b"CHANnel1:COUPling?").await,
-            StringIndex::Channel1Scale => self.get_string_parameter(b"CHANnel1:SCALe?").await,
-            StringIndex::Channel1Probe => self.get_string_parameter(b"CHANnel1:PROBe?").await,
+            StringIndex::Channel1Scale => {
+                let f = self.get_float_parameter(b"CHANnel1:SCALe?").await?;
+                // println!("f: {}", f);
+                match f {
+                    0.1 => Ok("100mV".to_string()),
+                    0.2 => Ok("200mV".to_string()),
+                    0.5 => Ok("500mV".to_string()),
+                    1.0 => Ok("1V".to_string()),
+                    2.0 => Ok("2V".to_string()),
+                    5.0 => Ok("5V".to_string()),
+                    10.0 => Ok("10V".to_string()),
+                    _ => Ok(f.to_string()),
+                }
+            }
+            StringIndex::Channel1Probe => {
+                let f = self.get_float_parameter(b"CHANnel1:PROBe?").await?;
+                match f {
+                    1.0 => Ok("1".to_string()),
+                    10.0 => Ok("10".to_string()),
+                    100.0 => Ok("100".to_string()),
+                    1000.0 => Ok("1000".to_string()),
+                    _ => Ok(f.to_string()),
+                }
+            }
         }
     }
 
     ///
     ///
     async fn set_string_at(&mut self, index: usize, value: &String) -> Result<(), Error> {
-        Ok(())
+        //
+        // Get the index
+        let idx = StringIndex::from_repr(index)
+            .ok_or(Error::InvalidArgument("Invalid Index".to_string()))?;
+
+        //
+        // Perform the request
+        match idx {
+            StringIndex::Channel1Coupling => {
+                self.set_string_parameter("CHANnel1:COUPling", value).await
+            }
+            StringIndex::Channel1Scale => self.set_string_parameter("CHANnel1:SCALe", value).await,
+            StringIndex::Channel1Probe => self.set_string_parameter("CHANnel1:PROBe", value).await,
+        }
     }
 }
