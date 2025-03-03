@@ -1,12 +1,12 @@
-mod channel;
+// mod channel;
 mod interface;
 
 use interface::DSO2C10Interface;
 
 use async_trait::async_trait;
-use panduza_platform_core::connector::usb::tmc::Driver as UsbTmcDriver;
-use panduza_platform_core::connector::usb::Settings as UsbSettings;
-use panduza_platform_core::{log_debug, Container, DriverOperations, Error, Instance};
+use panduza_platform_core::interface::usb::tmc::UsbTmcInterface;
+use panduza_platform_core::interface::usb::Settings as UsbSettings;
+use panduza_platform_core::{log_debug, Actions, Container, Error, Instance};
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::Mutex;
@@ -21,14 +21,14 @@ pub struct Device {}
 impl Device {}
 
 #[async_trait]
-impl DriverOperations for Device {
+impl Actions for Device {
     ///
     /// Mount the device instance
     ///
     async fn mount(&mut self, mut instance: Instance) -> Result<(), Error> {
         //
         //
-        let logger = instance.logger.clone();
+        let logger = instance.logger().clone();
 
         //
         // Usb settings
@@ -43,21 +43,21 @@ impl DriverOperations for Device {
 
         //
         // Mount the driver
-        let driver = UsbTmcDriver::open(&usb_settings)?.into_arc_mutex();
+        let driver = UsbTmcInterface::open(&usb_settings)?.into_arc_mutex();
 
         let interface: Arc<Mutex<DSO2C10Interface>> =
             Arc::new(Mutex::new(DSO2C10Interface::new(driver, logger.clone())));
 
-        panduza_platform_core::std::class::repl::mount("repl", instance.clone(), interface.clone())
-            .await?;
+        // panduza_platform_core::std::class::repl::mount("repl", instance.clone(), interface.clone())
+        //     .await?;
 
-        panduza_platform_core::std::attribute::idn::mount(instance.clone(), interface.clone())
-            .await?;
+        // panduza_platform_core::std::attribute::idn::mount(instance.clone(), interface.clone())
+        //     .await?;
 
-        let class_channels = instance.create_class("channel").finish().await;
-        for i in 1..=2 {
-            channel::mount(class_channels.clone(), i, interface.clone()).await?;
-        }
+        // let class_channels = instance.create_class("channel").finish().await;
+        // for i in 1..=2 {
+        //     channel::mount(class_channels.clone(), i, interface.clone()).await?;
+        // }
 
         Ok(())
     }

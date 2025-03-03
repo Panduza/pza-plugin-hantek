@@ -1,10 +1,11 @@
 use async_trait::async_trait;
-use panduza_platform_core::connector::usb::tmc::Driver as UsbTmcInterface;
-
-use panduza_platform_core::std::attribute::boolean::BooleanAccessorModel;
-use panduza_platform_core::std::attribute::idn::IdnReader;
-use panduza_platform_core::std::attribute::r#enum::StringAccessorModel;
-use panduza_platform_core::std::class::repl::ReplProtocol;
+use panduza_platform_core::codec::scpi;
+use panduza_platform_core::interface::usb::tmc::UsbTmcInterface;
+use panduza_platform_core::model::BooleanAccessorModel;
+use panduza_platform_core::protocol::BytesDialogProtocol;
+// use panduza_platform_core::std::attribute::idn::IdnReader;
+// use panduza_platform_core::std::attribute::r#enum::StringAccessorModel;
+// use panduza_platform_core::std::class::repl::ReplProtocol;
 use panduza_platform_core::{log_info, log_trace, Error, Logger};
 use strum_macros::FromRepr;
 use tokio::sync::Mutex;
@@ -223,52 +224,52 @@ impl DSO2C10Interface {
     // CHANnel<n>:PROBe
 }
 
-#[async_trait]
-impl ReplProtocol for DSO2C10Interface {
-    ///
-    ///
-    async fn eval(&mut self, command: String) -> Result<String, Error> {
-        self.sub_interface.lock().await.eval(command).await
-    }
-}
+// #[async_trait]
+// impl ReplProtocol for DSO2C10Interface {
+//     ///
+//     ///
+//     async fn eval(&mut self, command: String) -> Result<String, Error> {
+//         self.sub_interface.lock().await.eval(command).await
+//     }
+// }
 
-#[async_trait]
-/// Implement IDN Protocol
-///
-impl IdnReader for DSO2C10Interface {
-    async fn read_idn(&mut self) -> Result<String, Error> {
-        //
-        // Measure perfs
-        let start = Instant::now();
+// #[async_trait]
+// /// Implement IDN Protocol
+// ///
+// impl IdnReader for DSO2C10Interface {
+//     async fn read_idn(&mut self) -> Result<String, Error> {
+//         //
+//         // Measure perfs
+//         let start = Instant::now();
 
-        //
-        // Perform request
-        let mut response: Vec<u8> = Vec::new();
-        let cmd = "*IDN?".as_bytes();
-        self.sub_interface
-            .lock()
-            .await
-            .execute_command(cmd, &mut response)
-            .await?;
+//         //
+//         // Perform request
+//         let mut response: Vec<u8> = Vec::new();
+//         let cmd = "*IDN?".as_bytes();
+//         self.sub_interface
+//             .lock()
+//             .await
+//             .execute_command(cmd, &mut response)
+//             .await?;
 
-        //
-        // Log
-        log_trace!(
-            self.logger,
-            "ASK <=> {:?} - {:?} - {:.2?}",
-            cmd,
-            response,
-            start.elapsed()
-        );
+//         //
+//         // Log
+//         log_trace!(
+//             self.logger,
+//             "ASK <=> {:?} - {:?} - {:.2?}",
+//             cmd,
+//             response,
+//             start.elapsed()
+//         );
 
-        //
-        // End
-        match String::from_utf8(response) {
-            Ok(s) => Ok(s),
-            Err(_) => Ok("Cannot convert the payload into string".to_string()),
-        }
-    }
-}
+//         //
+//         // End
+//         match String::from_utf8(response) {
+//             Ok(s) => Ok(s),
+//             Err(_) => Ok("Cannot convert the payload into string".to_string()),
+//         }
+//     }
+// }
 
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
@@ -310,7 +311,13 @@ impl BooleanAccessorModel for DSO2C10Interface {
         // Perform the request
         match idx {
             //
-            BooleanIndex::Channel1BwLimit => self.get_boolean_parameter(b"CHANnel1:BWLimit?").await,
+            BooleanIndex::Channel1BwLimit => scpi::d_boolean(
+                self.sub_interface
+                    .lock()
+                    .await
+                    .ask(scpi::e_query("CHANnel1:BWLimit?"))
+                    .await?,
+            ),
             BooleanIndex::Channel1Display => self.get_boolean_parameter(b"CHANnel1:DISPlay?").await,
             BooleanIndex::Channel1Invert => self.get_boolean_parameter(b"CHANnel1:INVert?").await,
             BooleanIndex::Channel1Vernier => self.get_boolean_parameter(b"CHANnel1:VERNier?").await,
@@ -393,73 +400,73 @@ impl BooleanAccessorModel for DSO2C10Interface {
 // ----------------------------------------------------------------------------
 // ----------------------------------------------------------------------------
 
-#[derive(FromRepr, Debug, PartialEq)]
-pub enum StringIndex {
-    //
-    Channel1Coupling,
-    Channel1Scale,
-    Channel1Probe,
-}
+// #[derive(FromRepr, Debug, PartialEq)]
+// pub enum StringIndex {
+//     //
+//     Channel1Coupling,
+//     Channel1Scale,
+//     Channel1Probe,
+// }
 
-#[async_trait]
-///
-///
-impl StringAccessorModel for DSO2C10Interface {
-    ///
-    ///
-    async fn get_string_at(&mut self, index: usize) -> Result<String, Error> {
-        //
-        // Get the index
-        let idx = StringIndex::from_repr(index)
-            .ok_or(Error::InvalidArgument("Invalid Index".to_string()))?;
+// #[async_trait]
+// ///
+// ///
+// impl StringAccessorModel for DSO2C10Interface {
+//     ///
+//     ///
+//     async fn get_string_at(&mut self, index: usize) -> Result<String, Error> {
+//         //
+//         // Get the index
+//         let idx = StringIndex::from_repr(index)
+//             .ok_or(Error::InvalidArgument("Invalid Index".to_string()))?;
 
-        //
-        // Perform the request
-        match idx {
-            StringIndex::Channel1Coupling => self.get_string_parameter(b"CHANnel1:COUPling?").await,
-            StringIndex::Channel1Scale => {
-                let f = self.get_float_parameter(b"CHANnel1:SCALe?").await?;
-                // println!("f: {}", f);
-                match f {
-                    0.1 => Ok("100mV".to_string()),
-                    0.2 => Ok("200mV".to_string()),
-                    0.5 => Ok("500mV".to_string()),
-                    1.0 => Ok("1V".to_string()),
-                    2.0 => Ok("2V".to_string()),
-                    5.0 => Ok("5V".to_string()),
-                    10.0 => Ok("10V".to_string()),
-                    _ => Ok(f.to_string()),
-                }
-            }
-            StringIndex::Channel1Probe => {
-                let f = self.get_float_parameter(b"CHANnel1:PROBe?").await?;
-                match f {
-                    1.0 => Ok("1".to_string()),
-                    10.0 => Ok("10".to_string()),
-                    100.0 => Ok("100".to_string()),
-                    1000.0 => Ok("1000".to_string()),
-                    _ => Ok(f.to_string()),
-                }
-            }
-        }
-    }
+//         //
+//         // Perform the request
+//         match idx {
+//             StringIndex::Channel1Coupling => self.get_string_parameter(b"CHANnel1:COUPling?").await,
+//             StringIndex::Channel1Scale => {
+//                 let f = self.get_float_parameter(b"CHANnel1:SCALe?").await?;
+//                 // println!("f: {}", f);
+//                 match f {
+//                     0.1 => Ok("100mV".to_string()),
+//                     0.2 => Ok("200mV".to_string()),
+//                     0.5 => Ok("500mV".to_string()),
+//                     1.0 => Ok("1V".to_string()),
+//                     2.0 => Ok("2V".to_string()),
+//                     5.0 => Ok("5V".to_string()),
+//                     10.0 => Ok("10V".to_string()),
+//                     _ => Ok(f.to_string()),
+//                 }
+//             }
+//             StringIndex::Channel1Probe => {
+//                 let f = self.get_float_parameter(b"CHANnel1:PROBe?").await?;
+//                 match f {
+//                     1.0 => Ok("1".to_string()),
+//                     10.0 => Ok("10".to_string()),
+//                     100.0 => Ok("100".to_string()),
+//                     1000.0 => Ok("1000".to_string()),
+//                     _ => Ok(f.to_string()),
+//                 }
+//             }
+//         }
+//     }
 
-    ///
-    ///
-    async fn set_string_at(&mut self, index: usize, value: &String) -> Result<(), Error> {
-        //
-        // Get the index
-        let idx = StringIndex::from_repr(index)
-            .ok_or(Error::InvalidArgument("Invalid Index".to_string()))?;
+//     ///
+//     ///
+//     async fn set_string_at(&mut self, index: usize, value: &String) -> Result<(), Error> {
+//         //
+//         // Get the index
+//         let idx = StringIndex::from_repr(index)
+//             .ok_or(Error::InvalidArgument("Invalid Index".to_string()))?;
 
-        //
-        // Perform the request
-        match idx {
-            StringIndex::Channel1Coupling => {
-                self.set_string_parameter("CHANnel1:COUPling", value).await
-            }
-            StringIndex::Channel1Scale => self.set_string_parameter("CHANnel1:SCALe", value).await,
-            StringIndex::Channel1Probe => self.set_string_parameter("CHANnel1:PROBe", value).await,
-        }
-    }
-}
+//         //
+//         // Perform the request
+//         match idx {
+//             StringIndex::Channel1Coupling => {
+//                 self.set_string_parameter("CHANnel1:COUPling", value).await
+//             }
+//             StringIndex::Channel1Scale => self.set_string_parameter("CHANnel1:SCALe", value).await,
+//             StringIndex::Channel1Probe => self.set_string_parameter("CHANnel1:PROBe", value).await,
+//         }
+//     }
+// }
