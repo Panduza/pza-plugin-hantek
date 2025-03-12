@@ -15,9 +15,8 @@
                 }
             },
 
-
             attributes: {
-                "display": {
+                display: {
                     info: "---",
                     type: "boolean",
                     mode: "rw",
@@ -30,9 +29,25 @@
                         }
                     }
                 },
+                triggered: {
+                    info: "---",
+                    type: "boolean",
+                    mode: "ro",
+                    model: "boolean-accessor",
+                    codec: {
+                        name: "scpi",
+                        conf: {
+                            get_query: "TRIGger:STATus?",
+                            // Allow non boolean response to be mapped into boolean
+                            get_response_map: {
+                                "TRIGed": true,
+                                "NOTRIG": false
+                            }, 
+                        }
+                    }
+                },
             }
         }
-
 
     }
 }

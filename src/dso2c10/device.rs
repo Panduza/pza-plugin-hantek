@@ -69,6 +69,15 @@ impl Actions for Device {
             "info",
         )
         .await?;
+        //
+        //
+        template::class::boolean_acquisitor::mount(
+            instance.clone(),
+            interface.clone(),
+            BooleanAccessorIndex::Triggered as usize,
+            "triggered",
+        )
+        .await?;
 
         Ok(())
     }

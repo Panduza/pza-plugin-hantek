@@ -4,6 +4,7 @@ use async_trait::async_trait;
 use std::sync::Arc;
 use strum_macros::FromRepr;
 use tokio::sync::Mutex;
+use std::collections::HashMap;
 
 use panduza_platform_core::helper;
 use panduza_platform_core::Error;
@@ -55,6 +56,7 @@ impl SpecializedInterface {
 #[derive(FromRepr, Debug, PartialEq)]
 pub enum BooleanAccessorIndex {
 	Display,
+	Triggered,
 }
 
 #[async_trait]
@@ -72,7 +74,7 @@ impl BooleanAccessorModel for SpecializedInterface {
         //
         // Perform the request
         match idx {
-    BooleanAccessorIndex::Display => Ok(helper::scpi::ScpiBoolean::from_bytes(self.base.lock().await.ask(bytes::Bytes::from("CHANnel1:DISPlay?")).await?)?.value()),_ => { Err(Error::InvalidArgument("No Action for Index".to_string())) }
+    BooleanAccessorIndex::Display => Ok(helper::scpi::ScpiBoolean::from_bytes(self.base.lock().await.ask(bytes::Bytes::from("CHANnel1:DISPlay?")).await?)?.value()),BooleanAccessorIndex::Triggered => Ok(helper::scpi::ScpiBoolean::from_bytes_and_map(self.base.lock().await.ask(bytes::Bytes::from("TRIGger:STATus?")).await?, HashMap::from([("TRIGed", true), ("NOTRIG", false), ]))?.value()),_ => { Err(Error::InvalidArgument("No Action for Index".to_string())) }
 		}
 
 }
@@ -88,9 +90,9 @@ impl BooleanAccessorModel for SpecializedInterface {
         //
         // Perform the request
         match idx { BooleanAccessorIndex::Display => self.base.lock().await.tell(bytes::Bytes::from(format!(
-                        "CHANnel1:DISPlay {}",
-                        helper::scpi::ScpiBoolean::new(new_value).to_str()
-                    ))).await,
+                            "CHANnel1:DISPlay {}",
+                            helper::scpi::ScpiBoolean::new(new_value).to_str()
+                        ))).await,
 
 		_ => { Err(Error::InvalidArgument("No Action for Index".to_string())) }
 }
