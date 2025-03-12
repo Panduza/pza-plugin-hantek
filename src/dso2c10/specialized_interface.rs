@@ -54,6 +54,7 @@ impl SpecializedInterface {
 
 #[derive(FromRepr, Debug, PartialEq)]
 pub enum BooleanAccessorIndex {
+	Display,
 }
 
 #[async_trait]
@@ -71,14 +72,14 @@ impl BooleanAccessorModel for SpecializedInterface {
         //
         // Perform the request
         match idx {
-    _ => { Err(Error::InvalidArgument("No Action for Index".to_string())) }
+    BooleanAccessorIndex::Display => Ok(helper::scpi::ScpiBoolean::from_bytes(self.base.lock().await.ask(bytes::Bytes::from("CHANnel1:DISPlay?")).await?)?.value()),_ => { Err(Error::InvalidArgument("No Action for Index".to_string())) }
 		}
 
 }
 
-///
     ///
-    async fn set_boolean_at(&mut self, index: usize, value: bool) -> Result<(), Error> {
+    ///
+    async fn set_boolean_at(&mut self, index: usize, new_value: bool) -> Result<(), Error> {
         //
         // Get the index
         let idx = BooleanAccessorIndex::from_repr(index)
@@ -86,7 +87,11 @@ impl BooleanAccessorModel for SpecializedInterface {
 
         //
         // Perform the request
-        match idx {
+        match idx { BooleanAccessorIndex::Display => self.base.lock().await.tell(bytes::Bytes::from(format!(
+                        "CHANnel1:DISPlay {}",
+                        helper::scpi::ScpiBoolean::new(new_value).to_str()
+                    ))).await,
+
 		_ => { Err(Error::InvalidArgument("No Action for Index".to_string())) }
 }
 }
@@ -135,8 +140,6 @@ impl StringAccessorModel for SpecializedInterface {
 
 #[derive(FromRepr, Debug, PartialEq)]
 pub enum NumberAccessorIndex {
-	SignalDuration,
-	DutyCycle,
 }
 
 #[async_trait]
@@ -154,9 +157,7 @@ impl NumberAccessorModel for SpecializedInterface {
         //
         // Perform the request
         match idx {
-    NumberAccessorIndex::SignalDuration => Ok(helper::scpi::ScpiNumber::from_bytes(self.base.lock().await.ask(bytes::Bytes::from("SIG:DUR?")).await?)?.value()),
-NumberAccessorIndex::DutyCycle => Ok(helper::scpi::ScpiNumber::from_bytes(self.base.lock().await.ask(bytes::Bytes::from("PWM:DUTY?")).await?)?.value()),
-_ => { Err(Error::InvalidArgument("No Action for Index".to_string())) }
+    _ => { Err(Error::InvalidArgument("No Action for Index".to_string())) }
 		}
 
 }
@@ -180,7 +181,6 @@ _ => { Err(Error::InvalidArgument("No Action for Index".to_string())) }
 
 #[derive(FromRepr, Debug, PartialEq)]
 pub enum TriggerAccessorIndex {
-	SignalTrigger,
 }
 
 #[async_trait]
@@ -201,7 +201,6 @@ impl TriggerAccessorModel for SpecializedInterface {
         //
         // Perform the request
         match idx {
-TriggerAccessorIndex::SignalTrigger => self.base.lock().await.tell(bytes::Bytes::from("SIG:TRIG")).await,
 		_ => { Err(Error::InvalidArgument("No Action for Index".to_string())) }
 }
 }
