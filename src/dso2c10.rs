@@ -1,12 +1,14 @@
-mod device;
+//
+pub mod device;
+use panduza_platform_core::Actions;
+use panduza_platform_core::Producer;
 
-mod scpi_boolean;
-pub use scpi_boolean::ScpiBoolean;
-
-use device::Device;
-use panduza_platform_core::ProductionOrder;
-use panduza_platform_core::Scanner;
-use panduza_platform_core::{DriverOperations, Producer};
+mod specialized_interface;
+pub use specialized_interface::SpecializedInterface;
+pub use specialized_interface::BooleanAccessorIndex;
+pub use specialized_interface::StringAccessorIndex;
+pub use specialized_interface::NumberAccessorIndex;
+pub use specialized_interface::TriggerAccessorIndex;
 
 #[derive(Default)]
 pub struct Package {}
@@ -27,45 +29,15 @@ impl Producer for Package {
     }
 
     fn description(&self) -> String {
-        "Oscilloscope".to_string()
+        "---".to_string()
     }
 
     fn props(&self) -> panduza_platform_core::Props {
-        let mut props = panduza_platform_core::Props::default();
-
-        props
+        panduza_platform_core::Props::default()
     }
 
-    fn produce(&self) -> Result<Box<dyn DriverOperations>, panduza_platform_core::Error> {
-        return Ok(Box::new(Device::default()));
+    fn produce(&self) -> Result<Box<dyn Actions>, panduza_platform_core::Error> {
+        return Ok(Box::new(device::Device::new()));
     }
 }
-
-impl Scanner for Package {
-    fn name(&self) -> String {
-        "hantek".to_string()
-    }
-
-    fn scan(&self) -> Vec<ProductionOrder> {
-        let mut orders = Vec::new();
-
-        // if let Ok(devices_list) = nusb::list_devices() {
-        //     for dev in devices_list {
-        //         let man = dev.manufacturer_string().unwrap_or("?");
-        //         let pro = dev.product_string().unwrap_or("?");
-
-        //         let mut po = ProductionOrder::new("std.scpi", format!("{}.{}", man, pro))
-        //             .add_u16_setting("usb_vid", dev.vendor_id())
-        //             .add_u16_setting("usb_pid", dev.product_id());
-
-        //         if let Some(serial_num) = dev.serial_number() {
-        //             po = po.add_string_setting("usb_serial", serial_num);
-        //         }
-
-        //         orders.push(po);
-        //     }
-        // }
-
-        orders
-    }
-}
+    

@@ -1,0 +1,67 @@
+{
+    name: "hantek",
+    output: "in-place",
+
+    producers: {
+        "DSO2C10" : {
+            manufacturer: "hantek",
+            interface: {
+                name: "usb-tmc",
+                conf: {
+                    usb: {
+                        vid: 0x2341,
+                        pid: 0x0043
+                    }
+                }
+            },
+
+            // classes: {
+
+            // },
+            attributes: {
+                "signal trigger": {
+                    info: "Duration of the signal in ms",
+                    type: "trigger",
+                    mode: "rw",
+                    model: "trigger-accessor",
+                    codec: {
+                        name: "scpi",
+                        conf: {
+                            trigger_query: "SIG:TRIG"
+                        }
+                    }
+                },
+                "signal duration": {
+                    info: "Duration of the signal in ms",
+                    type: "number",
+                    range: [0, 1000],
+                    mode: "rw",
+                    model: "number-accessor",
+                    codec: {
+                        name: "scpi",
+                        conf: {
+                            get_query: "SIG:DUR?",
+                            set_query: "SIG:DUR"
+                        }
+                    }
+                },
+                "duty cycle": {
+                    info: "Duty cycle of the PWM",
+                    type: "number",
+                    range: [0, 100],
+                    mode: "rw",
+                    model: "number-accessor",
+                    codec: {
+                        name: "scpi",
+                        conf: {
+                            get_query: "PWM:DUTY?",
+                            set_query: "PWM:DUTY"
+                        }
+                    }
+                },
+            }
+        }
+
+
+    }
+}

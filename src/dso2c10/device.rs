@@ -1,34 +1,48 @@
-mod channel;
-mod interface;
+//
+pub use super::SpecializedInterface;
+pub use super::BooleanAccessorIndex;
+pub use super::StringAccessorIndex;
+pub use super::NumberAccessorIndex;
+pub use super::TriggerAccessorIndex;
 
-use interface::DSO2C10Interface;
-
+use serde_json::json;
 use async_trait::async_trait;
-use panduza_platform_core::connector::usb::tmc::Driver as UsbTmcDriver;
-use panduza_platform_core::connector::usb::Settings as UsbSettings;
-use panduza_platform_core::{log_debug, Container, DriverOperations, Error, Instance};
-use std::sync::Arc;
+use panduza_platform_core::Error;
+use panduza_platform_core::Actions;
+use panduza_platform_core::Instance;
+use panduza_platform_core::template;
+use panduza_platform_core::Container;
 use std::time::Duration;
-use tokio::sync::Mutex;
 use tokio::time::sleep;
+
+use panduza_platform_core::interface::serial::SerialSettings;
+use panduza_platform_core::interface::serial::SerialEolInterface;
+use panduza_platform_core::interface::usb::UsbSettings;
+use panduza_platform_core::interface::usb::UsbTmcInterface;
 
 #[derive(Default)]
 ///
-/// Device to control PicoHA SSB Board
 ///
 pub struct Device {}
 
-impl Device {}
+impl Device {
+    /// Constructor
+    ///
+    pub fn new() -> Self {
+        Device {}
+    }
+}
 
 #[async_trait]
-impl DriverOperations for Device {
+impl Actions for Device {
     ///
-    /// Mount the device instance
     ///
-    async fn mount(&mut self, mut instance: Instance) -> Result<(), Error> {
+    ///
+    async fn mount(&mut self, instance: Instance) -> Result<(), Error> {
         //
         //
-        let logger = instance.logger.clone();
+        let logger = instance.logger().clone();
+
 
         //
         // Usb settings
@@ -39,26 +53,56 @@ impl DriverOperations for Device {
         //
         // Compose USB settings
         let usb_settings = UsbSettings::from_json_settings(&settings);
-        log_debug!(logger, "Try to open SCPI interface on {:?}", &usb_settings);
 
         //
-        // Mount the driver
-        let driver = UsbTmcDriver::open(&usb_settings)?.into_arc_mutex();
-
-        let interface: Arc<Mutex<DSO2C10Interface>> =
-            Arc::new(Mutex::new(DSO2C10Interface::new(driver, logger.clone())));
-
-        panduza_platform_core::std::class::repl::mount("repl", instance.clone(), interface.clone())
-            .await?;
-
-        panduza_platform_core::std::attribute::idn::mount(instance.clone(), interface.clone())
-            .await?;
-
-        let class_channels = instance.create_class("channel").finish().await;
-        for i in 1..=2 {
-            channel::mount(class_channels.clone(), i, interface.clone()).await?;
-        }
-
+        // 
+        let base = UsbTmcInterface::open(&usb_settings)?.into_arc_mutex();
+        
+        
+        //
+        //
+        let interface = SpecializedInterface::new(base, logger.clone());
+        
+//
+        //
+        template::attribute::trigger::mount(
+            instance.clone(),
+            interface.clone(),
+            TriggerAccessorIndex::SignalTrigger as usize,
+            "signal trigger",
+            "info",
+        )
+        .await?;
+    //
+        //
+        template::attribute::number::mount(
+            instance.clone(),
+            interface.clone(),
+            NumberAccessorIndex::SignalDuration as usize,
+            "signal duration",
+            "info",
+            "-",
+            0.0,
+            5000.0,
+            3,
+        )
+        .await?;
+    //
+        //
+        template::attribute::number::mount(
+            instance.clone(),
+            interface.clone(),
+            NumberAccessorIndex::DutyCycle as usize,
+            "duty cycle",
+            "info",
+            "-",
+            0.0,
+            5000.0,
+            3,
+        )
+        .await?;
+    
+        
         Ok(())
     }
     ///
@@ -68,3 +112,4 @@ impl DriverOperations for Device {
         sleep(Duration::from_secs(5)).await;
     }
 }
+    
