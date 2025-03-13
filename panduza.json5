@@ -46,6 +46,19 @@
                         }
                     }
                 },
+
+                samples: {
+                    info: "---",
+                    type: "vectorf32",
+                    mode: "ro",
+                    model: "vectorf32-accessor",
+                    codec: {
+                        name: "custom",
+                        conf: {
+                            get_at: "panduza/sample_custom_get_at.txt"
+                        }
+                    }
+                }
             }
         }
 

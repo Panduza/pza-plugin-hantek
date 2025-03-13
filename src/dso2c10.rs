@@ -9,6 +9,7 @@ pub use specialized_interface::BooleanAccessorIndex;
 pub use specialized_interface::StringAccessorIndex;
 pub use specialized_interface::NumberAccessorIndex;
 pub use specialized_interface::TriggerAccessorIndex;
+pub use specialized_interface::VectorF32AccessorIndex;
 
 #[derive(Default)]
 pub struct Package {}
