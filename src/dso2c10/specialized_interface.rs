@@ -279,15 +279,15 @@ impl VectorF32AccessorModel for SpecializedInterface {
 
                 let total = data.len();
                 let sub = total - 29;
-                let subf = sub / 4;
+                // let subf = sub / 4;
 
                 // println!("sub - {:?}", sub);
                 // println!("subf - {:?}", subf);
-                // println!("{:?}", data);
+                // println!("{:?}", &data.to_vec());
                 // println!("{:?}", &data[29..subf]);
 
                 let mut result = Vec::<f32>::new();
-                for value in &data[29..subf] {
+                for value in &data[29..] {
                     // println!("{:?} - {:?} - {:?}", chan1_off, chan1_probe, chan1_scale);
                     let v_float = *value as f32;
                     // println!("v_float - {:?}", v_float);
