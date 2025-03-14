@@ -82,6 +82,17 @@ impl Actions for Device {
             )
             .await?;
             //
+        //
+        template::attribute::r#enum::mount(
+            instance.clone(),
+            interface.clone(),
+            StringAccessorIndex::TriggerSweep as usize,
+            "trigger_sweep",
+            "info",
+            vec![ "AUTO",  "NORMal",  "SINGle", ]
+        )
+        .await?;
+    //
             //
             template::class::vectorf32_acquisitor::mount(
                 instance.clone(),

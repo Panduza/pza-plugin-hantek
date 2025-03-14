@@ -46,7 +46,21 @@
                         }
                     }
                 },
-
+                trigger_sweep : {
+                    info: "AUTO => real time acquisition, NORMal => trigger when condition is ok",
+                    type: "string",
+                    whitelist: ["AUTO" , "NORMal" , "SINGle"],
+                    mode: "ro",
+                    model: "string-accessor",
+                    codec: {
+                        name: "scpi",
+                        conf: {
+                            get_query: "TRIGger:SWEep?",
+                            set_query: "TRIGger:SWEep",
+                            
+                        }
+                    }
+                },
                 samples: {
                     info: "---",
                     type: "vectorf32",
