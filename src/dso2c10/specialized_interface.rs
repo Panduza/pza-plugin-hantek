@@ -345,14 +345,26 @@ impl VectorF32AccessorModel for SpecializedInterface {
                 // println!("{:?}", &data.to_vec());
                 // println!("{:?}", &data[29..subf]);
 
+                let mut previous = 0.0;
                 let mut result = Vec::<f32>::new();
                 for value in &data[29..] {
-                    // println!("{:?} - {:?} - {:?}", chan1_off, chan1_probe, chan1_scale);
-                    let v_float = *value as f32;
-                    // println!("v_float - {:?}", v_float);
-                    let v_float_ratio = v_float / 25.0;
-                    // println!("v_float_ratio - {:?}", v_float_ratio);
-                    result.push((v_float_ratio * chan1_scale) - chan1_off);
+                    if *value >= 200 {
+                        // not on the screen
+                        result.push(previous);
+                    } else {
+                        // println!("{:?} - {:?} - {:?}", chan1_off, chan1_probe, chan1_scale);
+                        let v_float = *value as f32;
+                        // println!("v_float - {:?}", v_float);
+                        let v_float_ratio = v_float / 25.0;
+                        // println!("v_float_ratio - {:?}", v_float_ratio);
+                        let final_value = (v_float_ratio * chan1_scale) - chan1_off;
+                        // if final_value > 10.0 {
+                        //     println!("{:?} => {:?}", value, final_value);
+                        // }
+
+                        result.push(final_value);
+                        previous = final_value;
+                    }
                 }
 
                 Ok(result)
