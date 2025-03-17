@@ -46,6 +46,49 @@
                         }
                     }
                 },
+                trigger_mode : {
+                    info: " ",
+                    type: "string",
+                    whitelist: [
+                        "EDGE", 
+                        "PULSe", 
+                        "TV",
+                        "SLOPe",
+                        "TIMeout",
+                        "WINdow",
+                        "PATTern",
+                        "INTerval",
+                        "UNDerthrow",
+                        "UART",
+                        "LIN",
+                        "CAN",
+                        "SPI",
+                        "IIC"
+                    ],
+                    mode: "rw",
+                    model: "string-accessor",
+                    codec: {
+                        name: "scpi",
+                        conf: {
+                            get_query: "TRIGger:MODE?",
+                            set_query: "TRIGger:MODE",
+                            
+                        }
+                    }
+                },
+                trigger_edge_level : {
+                    info: "--",
+                    type: "number",
+                    mode: "rw",
+                    model: "number-accessor",
+                    codec: {
+                        name: "scpi",
+                        conf: {
+                            get_query: "TRIGger:EDGe:LEVel?",
+                            set_query: "TRIGger:EDGe:LEVel",       
+                        }
+                    }
+                },
                 trigger_sweep : {
                     info: "AUTO => real time acquisition, NORMal => trigger when condition is ok",
                     type: "string",

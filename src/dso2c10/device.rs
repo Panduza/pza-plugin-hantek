@@ -86,6 +86,31 @@ impl Actions for Device {
         template::attribute::r#enum::mount(
             instance.clone(),
             interface.clone(),
+            StringAccessorIndex::TriggerMode as usize,
+            "trigger_mode",
+            "info",
+            vec![ "EDGE",  "PULSe",  "TV",  "SLOPe",  "TIMeout",  "WINdow",  "PATTern",  "INTerval",  "UNDerthrow",  "UART",  "LIN",  "CAN",  "SPI",  "IIC", ]
+        )
+        .await?;
+    //
+        //
+        template::attribute::number::mount(
+            instance.clone(),
+            interface.clone(),
+            NumberAccessorIndex::TriggerEdgeLevel as usize,
+            "trigger_edge_level",
+            "info",
+            "-",
+            0.0,
+            5000.0,
+            3,
+        )
+        .await?;
+    //
+        //
+        template::attribute::r#enum::mount(
+            instance.clone(),
+            interface.clone(),
             StringAccessorIndex::TriggerSweep as usize,
             "trigger_sweep",
             "info",
