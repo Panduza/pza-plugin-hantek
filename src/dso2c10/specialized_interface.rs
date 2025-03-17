@@ -303,14 +303,6 @@ impl VectorF32AccessorModel for SpecializedInterface {
                         .await?,
                 )?
                 .value();
-                // let chan1_probe = helper::scpi::ScpiNumber::from_bytes(
-                //     self.base
-                //         .lock()
-                //         .await
-                //         .ask(bytes::Bytes::from("CHANnel1:PROBe?"))
-                //         .await?,
-                // )?
-                // .value();
                 let chan1_scale = helper::scpi::ScpiNumber::from_bytes(
                     self.base
                         .lock()
@@ -337,13 +329,6 @@ impl VectorF32AccessorModel for SpecializedInterface {
 
                 let total = data.len();
                 let sub = total - 29;
-                // let subf = sub / 4;
-                log_debug!(self.logger, "waveform frame {:?}", total);
-
-                // println!("sub - {:?}", sub);
-                // println!("subf - {:?}", subf);
-                // println!("{:?}", &data.to_vec());
-                // println!("{:?}", &data[29..subf]);
 
                 let mut previous = 0.0;
                 let mut result = Vec::<f32>::new();
