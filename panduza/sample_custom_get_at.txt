@@ -36,6 +36,16 @@
                 )?
                 .value();
 
+                let nb_of_points = helper::scpi::ScpiNumber::from_bytes(
+                    self.base
+                        .lock()
+                        .await
+                        .ask(bytes::Bytes::from("ACQuire:POINts?"))
+                        .await?,
+                )?
+                .value() as usize;
+                println!("{:?}", nb_of_points);
+
                 // Header
                 let mut data = Bytes::new();
                 for i in 0..6 {
@@ -58,28 +68,24 @@
                     // panic!("division by zero");
                     return Ok(vec![0.0]);
                 }
-                // let sub = total - 29;
 
-                let mut previous = 0.0;
+                // let mut previous = 0.0;
                 let mut result = Vec::<f32>::new();
-                for value in &data[29..] {
-                    if *value >= 200 {
-                        // not on the screen
-                        result.push(previous);
-                    } else {
-                        // println!("{:?} - {:?} - {:?}", chan1_off, chan1_probe, chan1_scale);
-                        let v_float = *value as f32;
-                        // println!("v_float - {:?}", v_float);
-                        let v_float_ratio = v_float / 25.0;
-                        // println!("v_float_ratio - {:?}", v_float_ratio);
-                        let final_value = (v_float_ratio * chan1_scale) - chan1_off;
-                        // if final_value > 10.0 {
-                        //     println!("{:?} => {:?}", value, final_value);
-                        // }
+                for value in &data[data.len() - nb_of_points..] {
+                    let real_val = *value as i8; // la valeur de la payload sont signé
 
-                        result.push(final_value);
-                        previous = final_value;
-                    }
+                    let v_float = real_val as f32;
+                    // println!("v_float - {:?}", v_float);
+                    let v_float_ratio = v_float / 25.0;
+                    // println!("v_float_ratio - {:?}", v_float_ratio);
+                    let final_value = (v_float_ratio * chan1_scale) - chan1_off;
+                    // if final_value > 10.0 {
+                    //     println!("{:?} => {:?}", value, final_value);
+                    // }
+
+                    result.push(final_value);
+                    //     previous = final_value;
+                    // }
                 }
 
                 Ok(result)
