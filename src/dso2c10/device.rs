@@ -60,19 +60,85 @@ impl Actions for Device {
         
         //
         //
-        let interface = SpecializedInterface::new(base, logger.clone());
+        let interface = SpecializedInterface::new(instance.clone(), base, logger.clone());
         
 //
             //
             template::attribute::boolean::mount(
                 instance.clone(),
                 interface.clone(),
-                BooleanAccessorIndex::Display as usize,
-                "display",
+                BooleanAccessorIndex::Channel1Display as usize,
+                "channel1_display",
                 "info",
             )
             .await?;
             //
+        //
+        template::attribute::number::mount(
+            instance.clone(),
+            interface.clone(),
+            NumberAccessorIndex::Channel1Offset as usize,
+            "channel1_offset",
+            "info",
+            "-",
+            0.0,
+            5000.0,
+            20,
+        )
+        .await?;
+    //
+        //
+        template::attribute::number::mount(
+            instance.clone(),
+            interface.clone(),
+            NumberAccessorIndex::Channel1Scale as usize,
+            "channel1_scale",
+            "info",
+            "-",
+            0.0,
+            5000.0,
+            20,
+        )
+        .await?;
+    //
+        //
+        template::attribute::number::mount(
+            instance.clone(),
+            interface.clone(),
+            NumberAccessorIndex::Channel1Probe as usize,
+            "channel1_probe",
+            "info",
+            "-",
+            0.0,
+            5000.0,
+            20,
+        )
+        .await?;
+    //
+            //
+            template::attribute::boolean::mount(
+                instance.clone(),
+                interface.clone(),
+                BooleanAccessorIndex::Channel2Display as usize,
+                "channel2_display",
+                "info",
+            )
+            .await?;
+            //
+        //
+        template::attribute::number::mount(
+            instance.clone(),
+            interface.clone(),
+            NumberAccessorIndex::SecPerDiv as usize,
+            "sec_per_div",
+            "info",
+            "-",
+            0.0,
+            5000.0,
+            10,
+        )
+        .await?;
+    //
             //
             template::class::boolean_acquisitor::mount(
                 instance.clone(),
@@ -94,6 +160,26 @@ impl Actions for Device {
         .await?;
     //
         //
+        template::attribute::trigger::mount(
+            instance.clone(),
+            interface.clone(),
+            TriggerAccessorIndex::TriggerForce as usize,
+            "trigger_force",
+            "info",
+        )
+        .await?;
+    //
+        //
+        template::attribute::trigger::mount(
+            instance.clone(),
+            interface.clone(),
+            TriggerAccessorIndex::Reset as usize,
+            "reset",
+            "info",
+        )
+        .await?;
+    //
+        //
         template::attribute::number::mount(
             instance.clone(),
             interface.clone(),
@@ -103,7 +189,7 @@ impl Actions for Device {
             "-",
             0.0,
             5000.0,
-            3,
+            10,
         )
         .await?;
     //

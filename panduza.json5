@@ -16,7 +16,7 @@
             },
 
             attributes: {
-                display: {
+                channel1_display: {
                     info: "---",
                     type: "boolean",
                     mode: "rw",
@@ -26,6 +26,74 @@
                         conf: {
                             get_query: "CHANnel1:DISPlay?",
                             set_query: "CHANnel1:DISPlay",
+                        }
+                    }
+                },
+                channel1_offset : {
+                    info: "---",
+                    type: "number",
+                    mode: "rw",
+                    model: "number-accessor",
+                    codec: {
+                        name: "scpi",
+                        conf: {
+                            get_query: "CHANnel1:OFFSet?",
+                            set_query: "CHANnel1:OFFSet",
+                        }
+                    }
+                },
+                channel1_scale : {
+                    info: "---",
+                    type: "number",
+                    mode: "rw",
+                    model: "number-accessor",
+                    codec: {
+                        name: "scpi",
+                        conf: {
+                            get_query: "CHANnel1:SCALe?",
+                            set_query: "CHANnel1:SCALe",
+                        }
+                    }
+                },
+                channel1_probe : {
+                    info: "---",
+                    type: "number",
+                    mode: "rw",
+                    model: "number-accessor",
+                    codec: {
+                        name: "scpi",
+                        conf: {
+                            get_query: "CHANnel1:PROBe?",
+                            set_query: "CHANnel1:PROBe",
+                        }
+                    }
+                },
+                channel2_display: {
+                    info: "---",
+                    type: "boolean",
+                    mode: "rw",
+                    model: "boolean-accessor",
+                    codec: {
+                        name: "scpi",
+                        conf: {
+                            get_query: "CHANnel2:DISPlay?",
+                            set_query: "CHANnel2:DISPlay",
+                        }
+                    }
+                },
+                sec_per_div : {
+                    info: "The current number of seconds per grid in the main window",
+                    type: "number",
+                    type_conf: {
+                        decimals: 10
+                    },
+                    mode: "rw",
+                    model: "number-accessor",
+                    codec: {
+                        name: "scpi",
+                        conf: {
+                            get_query: "TIMebase:SCALe?",
+                            set_query: "TIMebase:SCALe",
                         }
                     }
                 },
@@ -76,9 +144,37 @@
                         }
                     }
                 },
+                trigger_force : {
+                    info: "--",
+                    type: "trigger",
+                    mode: "rw",
+                    model: "trigger-accessor",
+                    codec: {
+                        name: "scpi",
+                        conf: {
+                            trigger_query: "TRIGger:FORCe",       
+                        }
+                    }
+                },
+                reset : {
+                    info: "--",
+                    type: "trigger",
+                    mode: "rw",
+                    model: "trigger-accessor",
+                    model_variant: "instance-resetor",
+                    codec: {
+                        name: "scpi",
+                        conf: {
+                            trigger_query: "*RST",
+                        }
+                    }
+                },
                 trigger_edge_level : {
                     info: "--",
                     type: "number",
+                    type_conf: {
+                        decimals: 10
+                    },
                     mode: "rw",
                     model: "number-accessor",
                     codec: {
