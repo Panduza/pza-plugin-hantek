@@ -168,6 +168,7 @@ pub enum NumberAccessorIndex {
 	Channel1Scale,
 	Channel1Probe,
 	SecPerDiv,
+	TimebaseOffset,
 	TriggerEdgeLevel,
 }
 
@@ -190,6 +191,7 @@ impl NumberAccessorModel for SpecializedInterface {
 NumberAccessorIndex::Channel1Scale => Ok(helper::scpi::ScpiNumber::from_bytes(self.base.lock().await.ask(bytes::Bytes::from("CHANnel1:SCALe?")).await?)?.value()),
 NumberAccessorIndex::Channel1Probe => Ok(helper::scpi::ScpiNumber::from_bytes(self.base.lock().await.ask(bytes::Bytes::from("CHANnel1:PROBe?")).await?)?.value()),
 NumberAccessorIndex::SecPerDiv => Ok(helper::scpi::ScpiNumber::from_bytes(self.base.lock().await.ask(bytes::Bytes::from("TIMebase:SCALe?")).await?)?.value()),
+NumberAccessorIndex::TimebaseOffset => Ok(helper::scpi::ScpiNumber::from_bytes(self.base.lock().await.ask(bytes::Bytes::from("TIMebase:POSition?")).await?)?.value()),
 NumberAccessorIndex::TriggerEdgeLevel => Ok(helper::scpi::ScpiNumber::from_bytes(self.base.lock().await.ask(bytes::Bytes::from("TRIGger:EDGe:LEVel?")).await?)?.value()),
 _ => { Err(Error::InvalidArgument("No Action for Index".to_string())) }
 		}
@@ -220,6 +222,10 @@ NumberAccessorIndex::Channel1Probe => self.base.lock().await.tell(bytes::Bytes::
                         ))).await,
 NumberAccessorIndex::SecPerDiv => self.base.lock().await.tell(bytes::Bytes::from(format!(
                             "TIMebase:SCALe {}",
+                            helper::scpi::ScpiNumber::new(new_value).to_str()
+                        ))).await,
+NumberAccessorIndex::TimebaseOffset => self.base.lock().await.tell(bytes::Bytes::from(format!(
+                            "TIMebase:POSition {}",
                             helper::scpi::ScpiNumber::new(new_value).to_str()
                         ))).await,
 NumberAccessorIndex::TriggerEdgeLevel => self.base.lock().await.tell(bytes::Bytes::from(format!(

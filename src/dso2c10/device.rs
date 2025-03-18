@@ -81,8 +81,8 @@ impl Actions for Device {
             "channel1_offset",
             "info",
             "-",
-            0.0,
-            5000.0,
+            -100000 as f64,
+            100000 as f64,
             20,
         )
         .await?;
@@ -95,8 +95,8 @@ impl Actions for Device {
             "channel1_scale",
             "info",
             "-",
-            0.0,
-            5000.0,
+            -100000 as f64,
+            100000 as f64,
             20,
         )
         .await?;
@@ -109,8 +109,8 @@ impl Actions for Device {
             "channel1_probe",
             "info",
             "-",
-            0.0,
-            5000.0,
+            -100000 as f64,
+            100000 as f64,
             20,
         )
         .await?;
@@ -133,9 +133,23 @@ impl Actions for Device {
             "sec_per_div",
             "info",
             "-",
-            0.0,
-            5000.0,
-            10,
+            -100000 as f64,
+            100000 as f64,
+            9,
+        )
+        .await?;
+    //
+        //
+        template::attribute::number::mount(
+            instance.clone(),
+            interface.clone(),
+            NumberAccessorIndex::TimebaseOffset as usize,
+            "timebase_offset",
+            "info",
+            "-",
+            -1000 as f64,
+            1000 as f64,
+            9,
         )
         .await?;
     //
@@ -187,9 +201,9 @@ impl Actions for Device {
             "trigger_edge_level",
             "info",
             "-",
-            0.0,
-            5000.0,
-            10,
+            -100000 as f64,
+            100000 as f64,
+            2,
         )
         .await?;
     //

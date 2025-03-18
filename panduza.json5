@@ -85,7 +85,7 @@
                     info: "The current number of seconds per grid in the main window",
                     type: "number",
                     type_conf: {
-                        decimals: 10
+                        decimals: 9
                     },
                     mode: "rw",
                     model: "number-accessor",
@@ -94,6 +94,24 @@
                         conf: {
                             get_query: "TIMebase:SCALe?",
                             set_query: "TIMebase:SCALe",
+                        }
+                    }
+                },
+                timebase_offset : {
+                    info: "--",
+                    type: "number",
+                    type_conf: {
+                        min: -1000,
+                        max: 1000,
+                        decimals: 9
+                    },
+                    mode: "rw",
+                    model: "number-accessor",
+                    codec: {
+                        name: "scpi",
+                        conf: {
+                            get_query: "TIMebase:POSition?",
+                            set_query: "TIMebase:POSition",       
                         }
                     }
                 },
@@ -173,7 +191,7 @@
                     info: "--",
                     type: "number",
                     type_conf: {
-                        decimals: 10
+                        decimals: 2
                     },
                     mode: "rw",
                     model: "number-accessor",
@@ -185,6 +203,9 @@
                         }
                     }
                 },
+
+                
+
                 trigger_sweep : {
                     info: "AUTO => real time acquisition, NORMal => trigger when condition is ok",
                     type: "string",
