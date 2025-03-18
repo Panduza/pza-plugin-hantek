@@ -1,4 +1,24 @@
 {
+                // let p = self
+                //     .base
+                //     .lock()
+                //     .await
+                //     .ask(bytes::Bytes::from("WAVeform:SOURce?"))
+                //     .await?;
+
+                // let p = self
+                //     .base
+                //     .lock()
+                //     .await
+                //     .ask(bytes::Bytes::from("WAVeform:FORMat?"))
+                //     .await?;
+
+                // self.base
+                //     .lock()
+                //     .await
+                //     .tell(bytes::Bytes::from("DIGitize CHANnel1"))
+                //     .await?;
+
                 let chan1_off = helper::scpi::ScpiNumber::from_bytes(
                     self.base
                         .lock()
@@ -18,21 +38,27 @@
 
                 // Header
                 let mut data = Bytes::new();
-                for i in 0..10 {
+                for i in 0..6 {
                     data = self
                         .base
                         .lock()
                         .await
-                        .ask(bytes::Bytes::from("WAVeform:DATA:ALL?"))
+                        // .ask(bytes::Bytes::from("WAVeform:DATA:ALL?"))
+                        .ask(bytes::Bytes::from("PRIVate:WAVeform:DATA:ALL?"))
                         .await?;
 
-                    if data.len() != 128 {
+                    if data.len() > 128 {
                         break;
                     }
                 }
 
                 let total = data.len();
-                let sub = total - 29;
+                if total <= 29 {
+                    println!("BAD DATA RECEIVED{:?}", total);
+                    // panic!("division by zero");
+                    return Ok(vec![0.0]);
+                }
+                // let sub = total - 29;
 
                 let mut previous = 0.0;
                 let mut result = Vec::<f32>::new();
